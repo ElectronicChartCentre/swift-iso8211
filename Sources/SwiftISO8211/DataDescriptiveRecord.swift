@@ -46,11 +46,14 @@ struct DataDescriptiveRecord {
             guard let fieldControlLength = Int(leader.fieldControlLength) else {
                 return nil
             }
-            guard let fieldControls = reader.readString(numBytes: fieldControlLength) else {
+            
+            // field controls
+            guard let _ = reader.readString(numBytes: fieldControlLength) else {
                 return nil
             }
             
-            guard let dataFieldName = reader.readStringUT(maxPos: fieldEnd) else {
+            // data field name
+            guard let _ = reader.readStringUT(maxPos: fieldEnd) else {
                 return nil
             }
             reader.skip(numBytes: 1)

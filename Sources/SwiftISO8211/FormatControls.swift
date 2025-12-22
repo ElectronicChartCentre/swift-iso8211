@@ -126,10 +126,9 @@ struct FormatControl {
             }
         }
         
-        if let numberType = numberType, numberType == 4, let octetCount = octetCount {
+        if let numberType = numberType, numberType == 4, let _ = octetCount {
             return readFloat(reader: reader)
         }
-
         
         if string.hasPrefix("B") {
             if let value = readData(reader: reader) {
