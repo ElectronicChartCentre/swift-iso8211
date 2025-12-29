@@ -106,6 +106,10 @@ struct ISO8211ReaderTests {
         #expect(rec1!.fieldNodes(withTag: "DSID").first?.valueByLabel["DSTC"] == nil)
         #expect(rec1!.fieldNodes(withTag: "DSID").first?.valueByLabel["*DSTC"] == nil)
         #expect(rec1!.fieldNodes(withTag: "DSID").first?.children.count == 2)
+        #expect(rec1!.fieldNodes(withTag: "DSID").first?.children.first?.count == 1)
+        #expect(rec1!.fieldNodes(withTag: "DSID").first?.children.last?.count == 1)
+        #expect(rec1!.fieldNodes(withTag: "DSID").first?.children.first?["*DSTC"] as? Int == 14)
+        #expect(rec1!.fieldNodes(withTag: "DSID").first?.children.last?["*DSTC"] as? Int == 18)
         #expect(rec1!.fieldNodes(withTag: "DSSI").count == 1)
         
         let rec2 = DataRecord.create(reader: reader, ddr: ddr!)
