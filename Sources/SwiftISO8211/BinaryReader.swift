@@ -5,7 +5,7 @@
 
 import Foundation
 
-protocol BinaryReader {
+public protocol BinaryReader {
     
     func hasMore() -> Bool
     
@@ -35,24 +35,24 @@ protocol BinaryReader {
     
 }
 
-class DataReader: BinaryReader {
+public class DataReader: BinaryReader {
     
-    let data: Data
+    private let data: Data
     private var _pos: Int = 0
     
-    init(data: Data) {
+    public init(data: Data) {
         self.data = data
     }
     
-    func hasMore() -> Bool {
+    public func hasMore() -> Bool {
         return _pos < data.count
     }
     
-    func pos() -> Int {
+    public func pos() -> Int {
         return _pos
     }
     
-    func skip(numBytes: Int) {
+    public func skip(numBytes: Int) {
         if numBytes < 0 {
             print("ERROR: skip negative number of bytes?")
             return
@@ -64,7 +64,7 @@ class DataReader: BinaryReader {
         _pos = min(_pos + numBytes, data.count)
     }
     
-    func peekByte() -> UInt8? {
+    public func peekByte() -> UInt8? {
         guard _pos < data.count else {
             return nil
         }
@@ -72,7 +72,7 @@ class DataReader: BinaryReader {
         return data[data.index(data.startIndex, offsetBy: _pos)]
     }
     
-    func readData(numBytes: Int) -> Data? {
+    public func readData(numBytes: Int) -> Data? {
         if _pos + numBytes > data.count {
             print("ERROR: cannot read \(numBytes) bytes, only \(data.count - _pos) left.")
             return nil
@@ -82,7 +82,7 @@ class DataReader: BinaryReader {
         return subData
     }
     
-    func readString(numBytes: Int) -> String? {
+    public func readString(numBytes: Int) -> String? {
         guard let subData = readData(numBytes: numBytes) else {
             return nil
         }
@@ -90,23 +90,23 @@ class DataReader: BinaryReader {
         return string
     }
     
-    func readStringUT() -> String? {
+    public func readStringUT() -> String? {
         return readString(maxPos: nil, terminator: Terminator.unit)
     }
     
-    func readStringUT(maxPos: Int) -> String? {
+    public func readStringUT(maxPos: Int) -> String? {
         return readString(maxPos: maxPos, terminator: Terminator.unit)
     }
     
-    func readStringFT() -> String? {
+    public func readStringFT() -> String? {
         return readString(maxPos: nil, terminator: Terminator.field)
     }
     
-    func readStringFT(maxPos: Int) -> String? {
+    public func readStringFT(maxPos: Int) -> String? {
         return readString(maxPos: maxPos, terminator: Terminator.field)
     }
 
-    func readString(maxPos: Int?, terminator: UInt8) -> String? {
+    public func readString(maxPos: Int?, terminator: UInt8) -> String? {
         var string = ""
         while (_pos < data.count) {
             if let maxPos = maxPos, _pos >= maxPos {
@@ -131,7 +131,7 @@ class DataReader: BinaryReader {
         return nil
     }
     
-    func readAsciiUInt8(numBytes: Int) -> UInt8? {
+    public func readAsciiUInt8(numBytes: Int) -> UInt8? {
         guard let string = readString(numBytes: numBytes) else {
             return nil
         }
@@ -144,7 +144,7 @@ class DataReader: BinaryReader {
         return value
     }
     
-    func readAsciiUInt32(numBytes: Int) -> UInt32? {
+    public func readAsciiUInt32(numBytes: Int) -> UInt32? {
         guard let string = readString(numBytes: numBytes) else {
             return nil
         }
@@ -157,7 +157,7 @@ class DataReader: BinaryReader {
         return value
     }
     
-    func readAsciiUInt64(numBytes: Int) -> UInt64? {
+    public func readAsciiUInt64(numBytes: Int) -> UInt64? {
         guard let string = readString(numBytes: numBytes) else {
             return nil
         }

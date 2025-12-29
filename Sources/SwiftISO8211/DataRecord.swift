@@ -5,13 +5,17 @@
 
 import Foundation
 
-struct DataRecord {
-    
+public struct DataRecord {
+     
     let leader: LogicalRecordLeader
     let directory: LogicalRecordDirectory
-    let fieldNodes: [FieldNode]
+    public let fieldNodes: [FieldNode]
     
-    static func create(reader: BinaryReader, ddr: DataDescriptiveRecord) -> DataRecord? {
+    public func fieldNodes(withTag tag: String) -> [FieldNode] {
+        return fieldNodes.filter { $0.fieldTag == tag }
+    }
+    
+    public static func create(reader: BinaryReader, ddr: DataDescriptiveRecord) -> DataRecord? {
         
         // print("DEBUG: start read record")
         
@@ -39,12 +43,11 @@ struct DataRecord {
                 continue
             }
             
-            guard let arrayDescriptors = ddr.arrayDescriptors(forFieldWithTag: tag) else {
+            guard let arrayDescriptorsFormatControlsPair = ddr.arrayDescriptorsFormatControlsByTag[tag] else {
                 return nil
             }
-            guard let formatControls = ddr.formatControls(forFieldWithTag: tag) else {
-                return nil
-            }
+            let arrayDescriptors = arrayDescriptorsFormatControlsPair.0
+            let formatControls = arrayDescriptorsFormatControlsPair.1
             
             if arrayDescriptors.labels.count != formatControls.formatControls.count {
                 print("ERROR: tag \(tag). array descriptors count: \(arrayDescriptors.labels.count) does not match format controls count: \(formatControls.formatControls.count)")
@@ -59,6 +62,8 @@ struct DataRecord {
             // handle *tag type of repeats
             var repeats: [(label: String, formatControl: FormatControl)] = []
             var hasRepeat = false
+            var repeatsFieldValueByLabel: [[String: Any]] = []
+            var repeatFieldValueByLabel: [String: Any] = [:]
 
             var fieldValueByLabel: [String: Any] = [:]
             for (label, formatControl) in zip(arrayDescriptors.labels, formatControls.formatControls) {
@@ -79,26 +84,46 @@ struct DataRecord {
                 let value = formatControl.readAny(reader: reader)
                 //print("DEBUG: DataRecord. tag \(tag), label: \(label), value: \(String(describing: value)), fc: \(formatControl.string)")
                 if let value = value {
-                    fieldValueByLabel[label] = value
+                    // figure out if add as repeat or main field
+                    if hasRepeat, arrayDescriptors.repetitionIndex ?? 0 > 0 {
+                        repeatFieldValueByLabel[label] = value
+                    } else {
+                        fieldValueByLabel[label] = value
+                    }
                 }
             }
-            let fieldNode = FieldNode(fieldTag: tag, valueByLabel: fieldValueByLabel)
-            fieldNodes.append(fieldNode)
-
+            
+            if !repeatFieldValueByLabel.isEmpty {
+                repeatsFieldValueByLabel.append(repeatFieldValueByLabel)
+            }
+            
+            var repeatsFieldNodes: [FieldNode] = []
             if hasRepeat {
                 while (reader.pos() + 1) < fieldEndPos {
-                    var fieldValueByLabel: [String: Any] = [:]
+                    var repeatFieldValueByLabel: [String: Any] = [:]
                     for (label, formatControl) in repeats {
                         let value = formatControl.readAny(reader: reader)
                         //print("DEBUG: DataRecord. tag \(tag), label: \(label), (repeat) value: \(String(describing: value)), fc: \(formatControl.string)")
                         if let value = value {
-                            fieldValueByLabel[label] = value
+                            repeatFieldValueByLabel[label] = value
                         }
                     }
-                    let fieldNode = FieldNode(fieldTag: tag, valueByLabel: fieldValueByLabel)
-                    fieldNodes.append(fieldNode)
+                    let fieldNode = FieldNode(fieldTag: tag, valueByLabel: repeatFieldValueByLabel, children: [])
+                    repeatsFieldNodes.append(fieldNode)
+                    repeatsFieldValueByLabel.append(repeatFieldValueByLabel)
                 }
             }
+            
+            // figure out if repetition field nodes are to be appended to main or if they are children
+            if !repeatsFieldNodes.isEmpty, arrayDescriptors.repetitionIndex ?? 0 > 0 {
+                let fieldNode = FieldNode(fieldTag: tag, valueByLabel: fieldValueByLabel, children: repeatsFieldValueByLabel)
+                fieldNodes.append(fieldNode)
+            } else {
+                let fieldNode = FieldNode(fieldTag: tag, valueByLabel: fieldValueByLabel, children: [])
+                fieldNodes.append(fieldNode)
+                fieldNodes.append(contentsOf: repeatsFieldNodes)
+            }
+            
         }
         
         // check record end

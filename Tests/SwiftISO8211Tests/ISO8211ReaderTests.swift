@@ -101,9 +101,26 @@ struct ISO8211ReaderTests {
         #expect(rec1!.directory.entries[0].fieldTag == "DSID")
         #expect(rec1!.directory.entries[1].fieldTag == "DSSI")
         #expect(rec1!.directory.entries[2].fieldTag == "ATCS")
+        #expect(rec1!.fieldNodes(withTag: "DSID").count == 1)
+        #expect(rec1!.fieldNodes(withTag: "DSID").first?.valueByLabel["DSNM"] as? String == "101AA00DS0003.000")
+        #expect(rec1!.fieldNodes(withTag: "DSID").first?.valueByLabel["DSTC"] == nil)
+        #expect(rec1!.fieldNodes(withTag: "DSID").first?.valueByLabel["*DSTC"] == nil)
+        #expect(rec1!.fieldNodes(withTag: "DSID").first?.children.count == 2)
+        #expect(rec1!.fieldNodes(withTag: "DSSI").count == 1)
+        
+        let rec2 = DataRecord.create(reader: reader, ddr: ddr!)
+        #expect(rec2 != nil)
+        #expect(rec2!.leader.recordLength == 151)
+        #expect(rec2!.directory.entries.count == 5)
+        #expect(rec2!.directory.entries[0].fieldTag == "CSID")
+        #expect(rec2!.directory.entries[1].fieldTag == "CRSH")
+        #expect(rec2!.directory.entries[2].fieldTag == "CRSH")
+        #expect(rec2!.directory.entries[3].fieldTag == "CSAX")
+        #expect(rec2!.directory.entries[4].fieldTag == "VDAT")
 
         var dataRecords: [DataRecord] = []
         dataRecords.append(rec1!)
+        dataRecords.append(rec2!)
         while reader.hasMore() {
             guard let record = DataRecord.create(reader: reader, ddr: ddr!) else {
                 break

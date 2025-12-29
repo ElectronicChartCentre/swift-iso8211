@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct DataDescriptiveRecord {
+public struct DataDescriptiveRecord {
     
     let leader: LogicalRecordLeader
     let directory: LogicalRecordDirectory
@@ -13,21 +13,25 @@ struct DataDescriptiveRecord {
     let arrayDescriptorss: [ArrayDescriptors]
     let formatControlss: [FormatControls]
     
-    func arrayDescriptors(forFieldWithTag tag: String) -> ArrayDescriptors? {
-        guard let idx = directory.entryIndex(tag: tag) else {
-            return nil
+    let arrayDescriptorsFormatControlsByTag: [String: (ArrayDescriptors, FormatControls)]
+    
+    init(leader: LogicalRecordLeader, directory: LogicalRecordDirectory, arrayDescriptorss: [ArrayDescriptors], formatControlss: [FormatControls]) {
+        self.leader = leader
+        self.directory = directory
+        self.arrayDescriptorss = arrayDescriptorss
+        self.formatControlss = formatControlss
+
+        // combine in directory for faster and easier lookup
+        var arrayDescriptorsFormatControlsByTag: [String: (ArrayDescriptors, FormatControls)] = [:]
+        for (index, directoryEntry) in directory.entries.enumerated() {
+            let arrayDescriptors = arrayDescriptorss[index]
+            let formatControls = formatControlss[index]
+            arrayDescriptorsFormatControlsByTag[directoryEntry.fieldTag] = (arrayDescriptors, formatControls)
         }
-        return arrayDescriptorss[idx]
+        self.arrayDescriptorsFormatControlsByTag = arrayDescriptorsFormatControlsByTag
     }
     
-    func formatControls(forFieldWithTag tag: String) -> FormatControls? {
-        guard let idx = directory.entryIndex(tag: tag) else {
-            return nil
-        }
-        return formatControlss[idx]
-    }
-    
-    static func create(reader: BinaryReader) -> DataDescriptiveRecord? {
+    public static func create(reader: BinaryReader) -> DataDescriptiveRecord? {
         
         guard let leader = LogicalRecordLeader.create(reader: reader) else {
             return nil

@@ -5,9 +5,10 @@
 
 import Foundation
 
-struct FieldNode {
+public struct FieldNode {
     
-    let fieldTag: String
-    let valueByLabel: [String: Any]
+    public let fieldTag: String
+    public let valueByLabel: [String: Any]
+    public let children: [[String: Any]]
     
 }
