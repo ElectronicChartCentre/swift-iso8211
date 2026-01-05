@@ -72,8 +72,6 @@ public struct DataDescriptiveRecord {
             }
             reader.skip(numBytes: 1)
             
-            print("DEBUG: tag: \(entry.fieldTag), ad: \(arrayDescriptor), fc: \(formatControls)")
-            
             guard let arrayDescriptors = ArrayDescriptors.create(arrayDescriptor) else {
                 return nil
             }

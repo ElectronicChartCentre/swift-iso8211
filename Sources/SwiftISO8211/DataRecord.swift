@@ -17,8 +17,6 @@ public struct DataRecord {
     
     public static func create(reader: BinaryReader, ddr: DataDescriptiveRecord) -> DataRecord? {
         
-        // print("DEBUG: start read record")
-        
         let recordStartPos = reader.pos()
 
         guard let leader = LogicalRecordLeader.create(reader: reader) else {
@@ -82,7 +80,6 @@ public struct DataRecord {
                 }
 
                 let value = formatControl.readAny(reader: reader)
-                //print("DEBUG: DataRecord. tag \(tag), label: \(label), value: \(String(describing: value)), fc: \(formatControl.string)")
                 if let value = value {
                     // figure out if add as repeat or main field
                     if hasRepeat, arrayDescriptors.repetitionIndex ?? 0 > 0 {
@@ -103,7 +100,6 @@ public struct DataRecord {
                     var repeatFieldValueByLabel: [String: Any] = [:]
                     for (label, formatControl) in repeats {
                         let value = formatControl.readAny(reader: reader)
-                        //print("DEBUG: DataRecord. tag \(tag), label: \(label), (repeat) value: \(String(describing: value)), fc: \(formatControl.string)")
                         if let value = value {
                             repeatFieldValueByLabel[label] = value
                         }

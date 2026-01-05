@@ -25,8 +25,6 @@ struct LogicalRecordDirectoryEntry {
             return nil
         }
         
-        // print("DEBUG: fieldTag: \(fieldTag), fieldLength: \(fieldLength), fieldPosition: \(fieldPosition)")
-        
         return LogicalRecordDirectoryEntry(fieldTag: fieldTag, fieldLength: fieldLength, fieldPosition: fieldPosition)
     }
     

@@ -9,6 +9,8 @@ To use S-57 ENC and S-101 for anything, much more than this library is needed.
 ## How to use
 
 ```swift
+        import SwiftISO8211
+
         let reader = DataReader(data: try Data(contentsOf: testDataURL))
         
         let ddr = DataDescriptiveRecord.create(reader: reader)
