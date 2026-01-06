@@ -40,13 +40,13 @@ public struct DataRecord {
                 reader.skip(numBytes: Int(directoryEntry.fieldLength))
                 continue
             }
-            
+
             guard let arrayDescriptorsFormatControlsPair = ddr.arrayDescriptorsFormatControlsByTag[tag] else {
                 return nil
             }
             let arrayDescriptors = arrayDescriptorsFormatControlsPair.0
             let formatControls = arrayDescriptorsFormatControlsPair.1
-            
+
             if arrayDescriptors.labels.count != formatControls.formatControls.count {
                 print("ERROR: tag \(tag). array descriptors count: \(arrayDescriptors.labels.count) does not match format controls count: \(formatControls.formatControls.count)")
                 return nil
@@ -93,7 +93,7 @@ public struct DataRecord {
             if !repeatFieldValueByLabel.isEmpty {
                 repeatsFieldValueByLabel.append(repeatFieldValueByLabel)
             }
-            
+
             var repeatsFieldNodes: [FieldNode] = []
             if hasRepeat {
                 while (reader.pos() + 1) < fieldEndPos {
@@ -111,7 +111,7 @@ public struct DataRecord {
             }
             
             // figure out if repetition field nodes are to be appended to main or if they are children
-            if !repeatsFieldNodes.isEmpty, arrayDescriptors.repetitionIndex ?? 0 > 0 {
+            if !repeatsFieldValueByLabel.isEmpty, arrayDescriptors.repetitionIndex ?? 0 > 0 {
                 let fieldNode = FieldNode(fieldTag: tag, valueByLabel: fieldValueByLabel, children: repeatsFieldValueByLabel)
                 fieldNodes.append(fieldNode)
             } else {
