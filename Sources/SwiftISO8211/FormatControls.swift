@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import CoreFoundation // for CF* on Linux
 
 struct FormatControls {
     
