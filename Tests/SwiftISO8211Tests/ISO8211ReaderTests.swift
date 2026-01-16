@@ -5,6 +5,12 @@
 
 import Testing
 import Foundation
+
+// FoundationNetworking needed on Linux and does not exist on macOS..
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
 import ZipArchive
 @testable import SwiftISO8211
 
