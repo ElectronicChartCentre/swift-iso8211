@@ -5,6 +5,7 @@
 
 import Testing
 import Foundation
+import ZipArchive
 @testable import SwiftISO8211
 
 struct ISO8211ReaderTests {
@@ -133,5 +134,73 @@ struct ISO8211ReaderTests {
         }
         #expect(dataRecords.count == 190)
     }
+    
+    @Test func testParseCASeaTrialsS101Data() async throws {
+        // download CA SeaTrials data. Do not include in this repo as of distribution agreement.
+        let localZipFilePath = "ca-sea-trials.zip"
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: localZipFilePath) {
+            print("DEBUG: could not find \(localZipFilePath) locally, so try to download")
+            guard let zipURL = URL(string: "https://www.charts.gc.ca/documents/data-gestion/Unencrypted_S100_DatasetsNov2025.zip") else {
+                Issue.record("Invalid test data url")
+                return
+            }
+            
+            let (data, response) = try await URLSession.shared.data(from: zipURL)
+            #expect((response as? HTTPURLResponse)?.statusCode == 200)
+            #expect(data.count > 0)
+            
+            try data.write(to: URL(fileURLWithPath: localZipFilePath))
+        }
+        
+        let zipData = try Data(contentsOf: URL(fileURLWithPath: localZipFilePath))
+        
+        var fileDataByName: [String: Data] = [:]
+        let reader = try ZipArchiveReader(buffer: zipData)
+        for fileHeader in try reader.readDirectory() {
+            if fileHeader.isDirectory {
+                continue
+            }
+            guard let filename = fileHeader.filename.lastComponent?.string else {
+                continue
+            }
+            if !filename.hasPrefix("101") || !filename.hasSuffix(".000") {
+                continue
+            }
+            let fileContents = Data(try reader.readFile(fileHeader))
+            fileDataByName[filename] = fileContents
+        }
+        
+        #expect(!fileDataByName.isEmpty)
+        
+        for (fileName, data) in fileDataByName {
+            print("DEBUG: start reading \(fileName)")
+            let reader = DataReader(data: data)
+            
+            guard let ddr = DataDescriptiveRecord.create(reader: reader) else {
+                Issue.record("Could not parse \(fileName) as a ISO8211 file")
+                return
+            }
+
+            var dataRecords: [DataRecord] = []
+            while reader.hasMore() {
+                guard let record = DataRecord.create(reader: reader, ddr: ddr) else {
+                    Issue.record("Could not parse \(fileName) as a ISO8211 file - record \(dataRecords.count + 1)")
+                    return
+                }
+                dataRecords.append(record)
+            }
+
+            #expect(dataRecords.count > 0)
+            
+            for record in dataRecords {
+                for fieldNode in record.fieldNodes(withTag: "C3IL") {
+                    #expect(fieldNode.children.isEmpty == false)
+                }
+            }
+        }
+        
+    }
+
 
 }

@@ -13,15 +13,20 @@ let package = Package(
             targets: ["SwiftISO8211"]
         ),
     ],
+    dependencies: [
+        // zip only needed for testing
+        .package(url: "https://github.com/adam-fowler/swift-zip-archive", from: "0.6.4")
+    ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "SwiftISO8211"
         ),
         .testTarget(
             name: "SwiftISO8211Tests",
-            dependencies: ["SwiftISO8211"],
+            dependencies: [
+                .target(name: "SwiftISO8211"),
+                .product(name: "ZipArchive", package: "swift-zip-archive")
+            ],
             resources: [.copy("TestResources")]
         ),
     ]
