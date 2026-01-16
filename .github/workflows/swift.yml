@@ -21,7 +21,8 @@ jobs:
 
     - name: Setup Swift environment
       uses: swift-actions/setup-swift@v3
-      swift-version: "6.2"
+      with:
+        swift-version: "6.2"
 
     - name: Build
       run: swift build -v
