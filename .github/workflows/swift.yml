@@ -24,6 +24,13 @@ jobs:
       with:
         swift-version: "6.2"
 
+    - name: Lint
+      run: |
+        xcrun swift-format lint . \
+        --parallel \
+        --recursive \
+        --strict
+
     - name: Build
       run: swift build -v
 
