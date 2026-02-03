@@ -18,6 +18,6 @@ To use S-57 ENC and S-101 for anything, much more than this library is needed.
             let record = DataRecord.create(reader: reader, ddr: ddr!)
         }
 ```
-## Status
+## Build status
 
-Experimental
+[![Swift](https://github.com/ElectronicChartCentre/swift-iso8211/actions/workflows/swift.yml/badge.svg)](https://github.com/ElectronicChartCentre/swift-iso8211/actions/workflows/swift.yml)
