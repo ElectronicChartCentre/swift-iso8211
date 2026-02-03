@@ -6,9 +6,9 @@
 import Foundation
 
 public struct FieldNode {
-    
-    public let fieldTag: String
-    public let valueByLabel: [String: Any]
-    public let children: [[String: Any]]
-    
+
+  public let fieldTag: String
+  public let valueByLabel: [String: Any]
+  public let children: [[String: Any]]
+
 }
